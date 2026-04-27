@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Timetable - EduPredict</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Fade-up animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-up { animation: fadeUp 0.6s ease forwards; opacity: 0; }
+        .delay-1 { animation-delay: 0.1s; }
+        
+        /* Subject Input Bar */
+        .subject-input-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .subject-input {
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1.1rem;
+            width: 100%;
+            max-width: 350px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .subject-input:focus {
+            border-color: #00d2ff;
+            background: rgba(0, 210, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+        }
+
+        /* Loader Animation */
+        .loader-container { text-align: center; padding: 50px 20px; display: none; }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(0, 210, 255, 0.2);
+            border-top-color: #00d2ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Generated AI Content Styling */
+        .ai-content { text-align: left; line-height: 1.6; font-size: 1.05rem; }
+        .ai-content h3 { color: #00d2ff; margin-top: 25px; margin-bottom: 10px; font-size: 1.4rem; border-bottom: 1px solid rgba(0,210,255,0.3); padding-bottom: 5px; }
+        .ai-content ul { margin-left: 20px; margin-bottom: 20px; }
+        .ai-content li { margin-bottom: 8px; }
+        .ai-content strong { color: #ff8f71; }
+    </style>
+</head>
+<body>
+    <nav class="navbar animate-up">
+        <div class="logo"><b>EduPredict</b> AI</div>
+        <div class="nav-links">
+            <button id="theme-toggle" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.5); color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer;">🌓 Mode</button>
+            <a href="/index" style="text-decoration: none; color: #00d2ff;">🏠 Dashboard</a>
+            <a href="/todo" style="text-decoration: none; color: #00d2ff;">📋 Tasks</a>
+            <a href="/logout" style="text-decoration: none; color: #ff4f8b;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper" style="align-items: flex-start; padding-top: 50px;">
+        <div class="glass-container animate-up delay-1" style="max-width: 800px; width: 100%; padding: 40px;">
+            <h2 style="margin-bottom: 10px; color: #00d2ff; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                ✨ Custom AI Study Plan
+            </h2>
+            <p style="opacity: 0.8; margin-bottom: 30px; text-align: center;">Enter your subject below to generate a specialized timetable.</p>
+            
+            <div id="input-section" class="subject-input-wrapper">
+                <input type="text" id="subject-field" class="subject-input" placeholder="e.g. Mathematics, Python, Physics..." autocomplete="off">
+                <button id="generate-btn" class="primary-btn" style="width: auto; padding: 15px 30px; margin: 0;">Generate Plan</button>
+            </div>
+            
+            <div id="plan-container" style="background: rgba(0,0,0,0.2); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); min-height: 200px;">
+                
+                <div id="intro-text" style="text-align: center; padding: 30px; opacity: 0.6;">
+                    <p style="font-size: 2rem; margin-bottom: 10px;">📚</p>
+                    <p>Tell the AI what you are studying to get started.</p>
+                </div>
+
+                <div class="loader-container" id="loader">
+                    <div class="spinner"></div>
+                    <h3 style="color: #00d2ff;">Consulting Llama 3.1 AI...</h3>
+                    <p style="opacity: 0.7; margin-top: 10px;">Building the perfect timetable for your subject.</p>
+                </div>
+
+                <div id="generated-content" class="ai-content" style="display: none;"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="window.print()" style="padding: 12px 25px; background: linear-gradient(135deg, #ff4f8b, #ff8f71); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 79, 139, 0.4);">
+                    📥 Download Timetable
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        if (themeBtn) {
+            if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+            themeBtn.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+            });
+        }
+
+        // Generate Plan Logic
+        async function fetchPlan() {
+            const subjectInput = document.getElementById('subject-field').value.trim();
+            if (!subjectInput) {
+                alert("Please enter a subject first!");
+                return;
+            }
+
+            const introText = document.getElementById('intro-text');
+            const loader = document.getElementById('loader');
+            const contentDiv = document.getElementById('generated-content');
+            const generateBtn = document.getElementById('generate-btn');
+
+            // Update UI to Loading State
+            introText.style.display = 'none';
+            contentDiv.style.display = 'none';
+            loader.style.display = 'block';
+            generateBtn.innerText = 'Thinking...';
+            generateBtn.style.pointerEvents = 'none';
+
+            try {
+                // Send subject to backend using POST
+                const response = await fetch('/api/generate_plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject: subjectInput })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+
+                // Show generated content
+                loader.style.display = 'none';
+                contentDiv.style.display = 'block';
+                contentDiv.innerHTML = data.html;
+            } catch (error) {
+                loader.innerHTML = `<h3 style='color: #ff4f8b;'>Oops!</h3><p>${error.message || 'Could not reach the AI server.'}</p>`;
+            } finally {
+                // Reset button
+                generateBtn.innerText = 'Generate New Plan';
+                generateBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        document.getElementById('generate-btn').addEventListener('click', fetchPlan);
+        document.getElementById('subject-field').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchPlan();
+        });
+    </script>
+</body>
+</html>

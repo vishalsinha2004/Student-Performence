@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>About Us - EduPredict</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">EduPredict AI</div>
+        <div class="nav-links"><a href="/login">Back to Login</a></div>
+    </nav>
+    <div class="main-wrapper">
+        <div class="container" style="width: 550px; text-align: left;">
+            <h2 style="color: #00d2ff; margin-bottom: 15px;">About EduPredict</h2>
+            <p style="line-height: 1.6; margin-bottom: 20px;">
+                EduPredict AI leverages advanced Machine Learning models to help students understand their academic potential. By analyzing study patterns, sleep habits, and previous results, we provide actionable insights.
+            </p>
+            <h4 style="margin-bottom: 10px;">Our Technology:</h4>
+            <ul style="margin-left: 20px; font-size: 0.9rem;">
+                <li><b>Linear Regression:</b> Predicts exact percentage scores.</li>
+                <li><b>Logistic Regression:</b> Classifies high-performance status.</li>
+                <li><b>Secure DB:</b> Encrypted user session management via SQLite3.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

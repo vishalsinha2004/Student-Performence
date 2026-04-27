@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - EduPredict AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Smooth Fade-Up Animations to match the rest of the app */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-up { animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <nav class="navbar animate-up">
+        <div class="logo" style="color:#00d2ff; font-weight:bold;">EduPredict AI</div>
+        <div class="nav-links">
+            <a href="/about">How to Use</a>
+            <a href="/signup">Sign Up</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container login-container animate-up delay-1">
+            <h2 style="margin-bottom: 20px; color: var(--text-color);">Welcome Back</h2>
+            
+            {% if error %}
+                <div class="error-message animate-up" style="color: #ff4f8b; margin-bottom: 20px; padding: 12px; background: rgba(255, 79, 139, 0.1); border-radius: 10px; border: 1px solid rgba(255, 79, 139, 0.3); font-size: 0.95rem;">
+                    ⚠️ {{ error }}
+                </div>
+            {% endif %}
+            
+            <form method="POST" action="/login" class="animate-up delay-2">
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Username" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+                
+                <button type="submit" class="btn-3d" style="margin-top: 20px;">Login to Dashboard</button>
+            </form>
+            
+            <p class="animate-up delay-3" style="margin-top: 25px; font-size:0.9rem;">
+                New here? <a href="/signup" style="color: #00d2ff; text-decoration:none; font-weight: 500;">Create Account</a>
+            </p>
+        </div>
+    </div>
+
+    <footer class="footer animate-up delay-3">
+        <p>&copy; 2026 EduPredict AI | Student Performance ML Project</p>
+    </footer>
+</body>
+</html>

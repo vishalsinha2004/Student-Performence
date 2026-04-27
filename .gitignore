@@ -1,0 +1,16 @@
+# Security / API Keys
+.env
+
+# Database Files
+*.db
+*.sqlite3
+users.db
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/

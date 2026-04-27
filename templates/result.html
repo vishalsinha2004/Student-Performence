@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prediction Result - EduPredict</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Button Layout & Styling */
+       /* Button Layout & Styling */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Ensures vertical alignment */
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap; 
+        }
+
+        /* Make the 'a' link behave like a button block */
+        .btn-group a {
+            display: flex;
+            text-decoration: none;
+        }
+
+        /* Force Both Buttons to be exactly the same size and perfectly aligned */
+        .primary-btn, .download-btn {
+            width: 240px;  
+            height: 55px;  
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 !important;  /* <--- THIS FIXES THE MISALIGNMENT */
+            padding: 0 !important; /* Removes any hidden padding */
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 210, 255, 0.6);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #ff4f8b, #ff8f71);
+            box-shadow: 0 4px 15px rgba(255, 79, 139, 0.4);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 79, 139, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><b>EduPredict</b> AI</div>
+
+        <div class="nav-links">
+            <button id="theme-toggle" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.5); color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer;">🌓 Mode</button>
+            <a href="/index" style="text-decoration: none; color: #00d2ff;">New Prediction</a>
+            <a href="/logout" style="text-decoration: none; color:#ff4f8b;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+
+        <div class="glass-container result-container" style="max-width:850px;" id="report-content">
+
+            <h2>Analysis Complete, {{ username | default('User') }}! 🎉</h2>
+
+            {% set safe_sleep = sleep | default(0) | float %}
+            {% set safe_hours = hours | default(0) | float %}
+            {% set safe_papers = papers | default(0) | float %}
+            {% set safe_result = result | default('Pending') %}
+            {% set safe_prediction = prediction | default(0) %}
+
+            {% if safe_result and 'High' in safe_result %}
+                {% set status_color = '#00e676' %}
+            {% else %}
+                {% set status_color = '#ff4f8b' %}
+            {% endif %}
+
+            <div class="insight-box">
+                <strong>💡 AI Insight:</strong><br>
+
+                {% if safe_sleep < 6 %}
+                    Your sleep is low ({{ safe_sleep }} hrs). Aim for 7+ hours.
+                {% elif safe_hours < 2 %}
+                    Study time is less ({{ safe_hours }} hrs). Increase it.
+                {% elif safe_papers == 0 %}
+                    No practice papers solved. Start practicing!
+                {% else %}
+                    Excellent balance! Keep it up 🚀
+                {% endif %}
+            </div>
+
+            <div class="result-grid">
+
+                <div class="score-card">
+                    <p>Predicted Score</p>
+
+                    <h1>{{ safe_prediction }}%</h1>
+
+                    <h3 class="result-text"
+                        style="color: {{ status_color | default('#ffffff') }};">
+                        Target: {{ safe_result }}
+                    </h3>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="studentChart"></canvas>
+                </div>
+
+            </div>
+
+            <div class="btn-group">
+                <a href="/index" style="text-decoration: none;">
+                    <button class="primary-btn">Calculate Again</button>
+                </a>
+
+                <button onclick="window.print()" class="download-btn">
+                    📄 Download Report
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+
+        // 🌙 Theme Toggle
+        const btn = document.getElementById('theme-toggle');
+        const theme = localStorage.getItem('theme');
+
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        btn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+
+            localStorage.setItem(
+                'theme',
+                document.body.classList.contains('light-mode') ? 'light' : 'dark'
+            );
+
+            location.reload();
+        });
+
+        // 📊 SAFE VALUES FROM JINJA
+        const hours = parseFloat("{{ hours | default(0) }}") || 0;
+        const sleep = parseFloat("{{ sleep | default(0) }}") || 0;
+        const scores = parseFloat("{{ scores | default(0) }}") || 0;
+        const papers = parseFloat("{{ papers | default(0) }}") || 0;
+
+        // Scale values
+        const hoursScaled = (hours / 24) * 100;
+        const sleepScaled = (sleep / 24) * 100;
+        const papersScaled = papers * 5;
+
+        // 🎨 Theme Colors
+        const isLight = document.body.classList.contains('light-mode');
+
+        const textColor = isLight ? '#000' : '#fff';
+        const gridColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+
+        // 📊 Chart
+        const ctx = document.getElementById('studentChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Study Hours', 'Sleep', 'Scores', 'Practice'],
+                datasets: [{
+                    data: [hoursScaled, sleepScaled, scores, papersScaled],
+                    backgroundColor: [
+                        'rgba(0,210,255,0.7)',
+                        'rgba(168,255,120,0.7)',
+                        'rgba(255,79,139,0.7)',
+                        'rgba(255,184,112,0.7)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+
+                scales: {
+                    x: {
+                        max: 100,
+                        beginAtZero: true,
+                        ticks: { color: textColor },
+                        grid: { color: gridColor }
+                    },
+                    y: {
+                        ticks: { color: textColor },
+                        grid: { display: false }
+                    }
+                },
+
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+    </script>
+
+</body>
+</html>

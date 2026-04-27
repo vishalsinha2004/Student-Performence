@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sign Up - EduPredict AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" style="color:#00d2ff; font-weight:bold;">EduPredict AI</div>
+        <div class="nav-links">
+            <a href="/login">Login</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="glass-container">
+            <h2 style="margin-bottom: 20px; color: var(--text-color);">Create Account</h2>
+            
+            {% if error %}
+                <div style="color: #ff4f8b; margin-bottom: 15px;">{{ error }}</div>
+            {% endif %}
+            
+            <form method="POST" action="/signup">
+                <input type="text" name="username" placeholder="Choose a Username" required autocomplete="off">
+                <input type="email" name="email" placeholder="Email Address" required autocomplete="off">
+                
+                <input type="password" 
+                       name="password" 
+                       placeholder="Create a Password" 
+                       required 
+                       minlength="7" 
+                       pattern=".*[!@#$%^&*()_+\-=\[\]{};':\\|,.<>\/?].*" 
+                       title="Password must be at least 7 characters long and include at least one special character (!@#$%^&* etc.)">
+                
+                <p style="text-align: left; font-size: 0.8rem; opacity: 0.7; margin-top: -5px; margin-bottom: 15px; margin-left: 5px;">
+                    * Must be at least 7 characters and include a special character (e.g., @, #, $).
+                </p>
+
+                <button type="submit" class="btn-3d">Join EduPredict</button>
+            </form>
+            
+            <p style="margin-top: 25px; font-size:0.9rem;">
+                Already have an account? <a href="/login" style="color: #00d2ff; text-decoration:none;">Login Here</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPredict AI - Welcome</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .hero-section { text-align: center; padding: 100px 20px; }
+        .hero-title { font-size: 3.5rem; margin-bottom: 20px; background: linear-gradient(135deg, #00d2ff, #3a7bd5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-subtitle { font-size: 1.2rem; margin-bottom: 40px; opacity: 0.8; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        
+        /* Smooth Fade-Up Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-up { animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* VIBRANT BUTTON BACKGROUNDS */
+        .btn-group { display: flex; justify-content: center; gap: 20px; margin-bottom: 50px; }
+        
+        .btn {
+            padding: 15px 35px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+        
+        /* Blue Get Started Button */
+        .btn-start {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);
+            border: none;
+        }
+        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 210, 255, 0.6); }
+        
+        /* Pink Login Button */
+        .btn-login {
+            background: linear-gradient(135deg, #ff4f8b, #ff8f71);
+            box-shadow: 0 5px 15px rgba(255, 79, 139, 0.4);
+            border: none;
+        }
+        .btn-login:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 79, 139, 0.6); }
+
+        /* Feature Cards */
+        .feature-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .feature-card { background: rgba(255, 255, 255, 0.05); padding: 25px 20px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); width: 250px; text-align: left; transition: transform 0.3s; }
+        .feature-card:hover { transform: translateY(-10px); border-color: rgba(0, 210, 255, 0.4); }
+        .feature-card h4 { color: #00d2ff; margin-bottom: 10px; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar animate-up">
+        <div class="logo"><b>EduPredict</b> AI</div>
+        <div class="nav-links">
+            {% if logged_in %}
+                <a href="/index">Go to Dashboard</a>
+                <a href="/logout" style="color: #ff4f8b;">Logout</a>
+            {% else %}
+                <a href="/about">About</a>
+                <a href="/login">Login</a>
+                <a href="/signup" style="color: #00d2ff; font-weight: bold;">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+    <div class="main-wrapper" style="display: block;">
+        <div class="hero-section">
+            <h1 class="hero-title animate-up delay-1">Unlock Your Academic Potential</h1>
+            <p class="hero-subtitle animate-up delay-2">EduPredict uses Machine Learning and AI to analyze your habits, predict exam scores, and generate study plans.</p>
+            
+            <div class="btn-group animate-up delay-3">
+                {% if logged_in %}
+                    <a href="/index" class="btn btn-start">Enter Dashboard ➤</a>
+                {% else %}
+                    <a href="/signup" class="btn btn-start">Get Started for Free</a>
+                    <a href="/login" class="btn btn-login">Or Login</a>
+                {% endif %}
+            </div>
+            
+            <div class="feature-grid animate-up delay-4">
+                <div class="feature-card"><h4>🤖 Llama 3.1 AI Tutor</h4><p style="font-size: 0.9rem; opacity: 0.8;">Chat with our advanced AI assistant.</p></div>
+                <div class="feature-card"><h4>📊 ML Predictions</h4><p style="font-size: 0.9rem; opacity: 0.8;">Linear & Logistic regression score forecasts.</p></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

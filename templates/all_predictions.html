@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Global Data Dashboard - EduPredict</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><b>EduPredict</b> AI</div>
+        <div class="nav-links">
+            <button id="theme-toggle">🌓 Mode</button>
+            <a href="/index">New Prediction</a>
+            <a href="/logout" style="color: #ff4f8b;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper" style="align-items: flex-start; padding-top: 50px;">
+        <div class="glass-container result-container" style="max-width: 1000px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+                <div style="text-align: left;">
+                    <h2 style="margin-bottom: 5px;">Prediction History</h2>
+                    <p style="opacity: 0.8;">Viewing your AI prediction data.</p>
+                </div>
+                
+                <input type="text" id="searchInput" placeholder="🔍 Search records..." style="max-width: 250px; margin: 0; padding: 10px 15px; border-radius: 20px;">
+            </div>
+            
+            <div class="table-responsive">
+                <table class="glass-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Hours Studied</th>
+                            <th>Past Score</th>
+                            <th>Sleep (Hrs)</th>
+                            <th>Papers</th>
+                            <th>AI Prediction</th>
+                            <th>Target Status</th>
+                            <th>Date & Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if records %}
+                            {% for row in records %}
+                            <tr class="data-row">
+                                <td style="font-weight: 600; color: #00d2ff;">{{ row['username'] }}</td>
+                                <td>{{ row['hours'] }}</td>
+                                <td>{{ row['scores'] }}</td>
+                                <td>{{ row['sleep'] }}</td>
+                                <td>{{ row['papers'] }}</td>
+                                <td style="font-weight: bold;">{{ row['predicted_score'] }}%</td>
+                                <td>
+                                    {% if 'High' in row['result'] %}
+                                        <span class="badge badge-success">High Performer</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">Needs Focus</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size: 0.85rem; opacity: 0.8;">{{ row['timestamp'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="emptyRow">
+                                <td colspan="8" style="text-align: center; padding: 30px;">No predictions have been made yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <a href="/index" style="text-decoration: none;">
+                <button class="primary-btn" style="margin-top: 30px; max-width: 250px;">Back to Analyzer</button>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('theme-toggle');
+        const theme = localStorage.getItem('theme');
+        if (theme === 'light') document.body.classList.add('light-mode');
+
+        btn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        });
+
+        // Table Search Filter Logic
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('.data-row');
+            
+            rows.forEach(row => {
+                let text = row.innerText.toLowerCase();
+                if(text.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

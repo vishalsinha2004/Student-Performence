@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Study Tasks - EduPredict</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* FULL SCREEN CHAT OVERLAY FOR TODO PAGE */
+        .chat-fab { width: 60px; height: 60px; background: linear-gradient(135deg, #00d2ff, #3a7bd5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; position: fixed; bottom: 30px; right: 30px; box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4); z-index: 999; }
+        .chat-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 15, 25, 0.98); border-radius: 0; border: none; display: none; flex-direction: column; z-index: 9999; backdrop-filter: blur(15px); }
+        .chat-header { padding: 20px 30px; border-bottom: 1px solid rgba(0, 210, 255, 0.2); display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); }
+        .chat-header h2 { font-size: 1.5rem; margin: 0; }
+        .close-chat { background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
+        .chat-messages { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .chat-bubble { padding: 12px 15px; border-radius: 10px; max-width: 80%; word-wrap: break-word; }
+        .bot-msg { background: rgba(0, 210, 255, 0.2); border-left: 3px solid #00d2ff; align-self: flex-start; }
+        .user-msg { background: linear-gradient(135deg, #00d2ff, #3a7bd5); align-self: flex-end; }
+        .chat-input-area { padding: 20px; border-top: 1px solid rgba(0, 210, 255, 0.2); display: flex; gap: 15px; max-width: 1000px; margin: 0 auto; width: 100%; background: transparent; }
+        #chat-input { flex: 1; padding: 15px 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 12px; color: #fff; font-size: 1.1rem; }
+        #send-chat { padding: 10px 20px; background: linear-gradient(135deg, #00d2ff, #3a7bd5); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><b>EduPredict</b> AI</div>
+        <div class="nav-links">
+            <button id="theme-toggle" style="background:none; border:1px solid #fff; color:#fff; padding:5px 10px; border-radius:15px; cursor:pointer;">🌓 Mode</button>
+            <a href="/index">Analyzer</a> 
+            <a href="/all_predictions">History</a> 
+            <a href="/logout" style="color: #ff4f8b;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="glass-container" style="max-width: 650px; width: 100%; padding: 40px;">
+            <h2 style="margin-bottom: 10px; text-align: left; color: #00d2ff;">{{ username }}'s Study Planner 📝</h2>
+            <p style="text-align: left; opacity: 0.8; margin-bottom: 25px;">Track your assignments, topics, and goals.</p>
+            
+            <form action="/add_todo" method="POST" style="display: flex; gap: 15px; margin-bottom: 30px;">
+                <input type="text" name="task" placeholder="What do you need to study next?" required style="margin: 0; flex: 1; padding: 15px; font-size: 1.05rem;">
+                <button type="submit" class="primary-btn" style="margin: 0; width: auto; padding: 0 25px; font-size: 1.5rem;">+</button>
+            </form>
+            
+            <ul class="todo-list" style="max-height: 400px; overflow-y: auto;">
+                {% for todo in todos %}
+                    <li class="todo-item {% if todo.is_completed %}completed{% endif %}" style="padding: 15px 20px; display: flex; align-items: center;">
+                        <form action="/toggle_todo/{{ todo.id }}" method="POST" style="margin:0; display:inline;">
+                            <input type="checkbox" onchange="this.form.submit()" {% if todo.is_completed %}checked{% endif %} style="width: 22px; height: 22px;">
+                        </form>
+                        <span style="flex: 1; margin: 0 15px; font-size: 1.1rem; text-align: left;">{{ todo.task }}</span>
+                        <form action="/delete_todo/{{ todo.id }}" method="POST" style="margin:0; display:inline;">
+                            <button type="submit" class="delete-btn" style="width: 32px; height: 32px; font-size: 1.3rem; background:none; border:none; cursor:pointer;">🗑️</button>
+                        </form>
+                    </li>
+                {% endfor %}
+                
+                {% if not todos %}
+                    <div style="padding: 40px 0; text-align: center; opacity: 0.6;">
+                        <p style="font-size: 1.2rem; margin-bottom: 10px;">✨</p>
+                        <p>Your task list is empty. Add a new goal above!</p>
+                    </div>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="chat-fab" onclick="document.getElementById('chat-overlay').style.display='flex'; document.getElementById('chat-input').focus();">💬</div>
+    <div class="chat-overlay" id="chat-overlay">
+        <div class="chat-header">
+            <h2><span style="color: #00d2ff;">EduPredict</span> Assistant</h2>
+            <button class="close-chat" onclick="document.getElementById('chat-overlay').style.display='none';">×</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-bubble bot-msg">Hello {{ username }}! Need help breaking down a big task? Just ask!</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type your message here..." autocomplete="off">
+            <button id="send-chat" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <footer class="footer" style="margin-top: auto; padding: 20px; text-align: center;">
+        <p>&copy; 2026 EduPredict AI | Student Performance ML Project</p>
+    </footer>
+
+    <script>
+        // 1. Theme Toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        if (themeBtn) {
+            if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+            themeBtn.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+            });
+        }
+        
+        // 2. Foolproof Chat Function
+        async function sendMessage() {
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // Render user message instantly
+            chatMessages.innerHTML += `<div class='chat-bubble user-msg'>${message}</div>`;
+            chatInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                chatMessages.innerHTML += `<div class='chat-bubble bot-msg'>${data.response}</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) { 
+                chatMessages.innerHTML += `<div class='chat-bubble bot-msg' style='color: #ff4f8b;'>Connection Error. Is your Flask server running?</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Allow pressing "Enter" key to send
+        document.getElementById('chat-input').addEventListener('keypress', function(e) { 
+            if (e.key === 'Enter') sendMessage(); 
+        });
+    </script>
+</body>
+</html>
