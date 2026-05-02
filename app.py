@@ -59,19 +59,34 @@ def login():
 def signup():
     if request.method == 'POST':
         username = request.form['username']
-        email = request.form.get('email', f"{username}@example.com") 
+        email = request.form['email']
         password = request.form['password']
-        hashed_password = generate_password_hash(password)
+        
+        # Hash the password for security
+        hashed_pw = generate_password_hash(password, method='pbkdf2:sha256')
+        
         conn = sqlite3.connect('users.db')
         cursor = conn.cursor()
+        
         try:
-            cursor.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", (username, email, hashed_password))
+            # Save the new user to the database
+            cursor.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", 
+                           (username, email, hashed_pw))
             conn.commit()
-            return redirect(url_for('login'))
+            
+            # --- THE FIX IS HERE ---
+            # Automatically log the user in by starting their session!
+            session['user'] = username
+            
+            # Send them straight to the main dashboard instead of login
+            return redirect(url_for('index'))
+            
         except sqlite3.IntegrityError:
+            # If username or email already exists
             return render_template('signup.html', error="Username or Email already exists!")
         finally:
             conn.close()
+            
     return render_template('signup.html')
 
 @app.route('/about')
